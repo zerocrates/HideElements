@@ -1,14 +1,19 @@
 <?php $view = get_view(); ?>
+<style type="text/css">
+.hide-boxes {
+    text-align: center;
+}
+</style>
 <table>
     <thead>
         <tr>
             <th rowspan="2"><?php echo __('Element'); ?></th>
-            <th colspan="3"><?php echo __('Hide on:'); ?></th>
+            <th class="hide-boxes" colspan="3"><?php echo __('Hide on:'); ?></th>
         </tr>
         <tr>
-            <th><?php echo __('Form'); ?></th>
-            <th><?php echo __('Admin'); ?></th>
-            <th><?php echo __('Public'); ?></th>
+            <th class="hide-boxes"><?php echo __('Form'); ?></th>
+            <th class="hide-boxes"><?php echo __('Admin'); ?></th>
+            <th class="hide-boxes"><?php echo __('Public'); ?></th>
         </tr>
     <thead>
     <tbody>
@@ -26,7 +31,7 @@
         <?php endif; ?>
         <tr>
             <td><?php echo __($element->name); ?></td>
-            <td>
+            <td class="hide-boxes">
                 <?php echo $view->formCheckbox(
                     "form[{$element->set_name}][{$element->name}]",
                     '1', array(
@@ -35,7 +40,7 @@
                     )
                 ); ?>
             </td>
-            <td>
+            <td class="hide-boxes">
                 <?php echo $view->formCheckbox(
                     "admin[{$element->set_name}][{$element->name}]",
                     '1', array(
@@ -44,7 +49,7 @@
                     )
                 ); ?>
             </td>
-            <td>
+            <td class="hide-boxes">
                 <?php echo $view->formCheckbox(
                     "public[{$element->set_name}][{$element->name}]",
                     '1', array(
