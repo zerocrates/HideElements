@@ -4,7 +4,7 @@
     text-align: center;
 }
 </style>
-<table>
+<table id="hide-elements-table">
     <thead>
         <tr>
             <th rowspan="2"><?php echo __('Element'); ?></th>
@@ -24,9 +24,9 @@
             $current_element_set = $element->set_name;
     ?>
         <tr>
-            <td colspan="4">
+            <th colspan="4">
                 <strong><?php echo __($current_element_set); ?></strong>
-            </td>
+            </th>
         </tr>
         <?php endif; ?>
         <tr>
