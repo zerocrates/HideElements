@@ -67,8 +67,22 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
     public function filterDisplayElements($elementsBySet)
     {
         $key = is_admin_theme() ? 'admin' : 'public';
+        $itemTypeSetName = ElementSet::ITEM_TYPE_NAME;
 
+        // Account for the renamed Item Type Metadata set.
         foreach ($this->_settings[$key] as $elementSet => $elements) {
+            if ($elementSet == $itemTypeSetName) {
+                foreach (array_keys($elementsBySet) as $currentSet) {
+                    if (substr_compare($currentSet, $itemTypeSetName,
+                        -strlen($itemTypeSetName), strlen($itemTypeSetName))
+                        === 0
+                    ) {
+                        $elementSet = $currentSet;
+                        break;
+                    }
+                }
+            }
+
             foreach (array_keys($elements) as $element) {
                 unset($elementsBySet[$elementSet][$element]);
             }
