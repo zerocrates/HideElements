@@ -8,16 +8,20 @@
 class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
 {
     protected $_hooks = array('initialize', 'config', 'config_form',
-        'install', 'uninstall');
+        'install', 'uninstall', 'upgrade');
 
-    protected $_filters = array('display_elements');
+    protected $_filters = array('display_elements', 'elements_select_options');
 
     protected $_settings;
 
     public function hookInstall()
     {
         $defaults = array(
-            'form' => array(), 'admin' => array(), 'public' => array()
+            'override' => array(),
+            'form' => array(),
+            'admin' => array(),
+            'public' => array(),
+            'search' => array(),
         );
         set_option('hide_elements_settings', json_encode($defaults));
     }
@@ -25,6 +29,16 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
     public function hookUninstall()
     {
         delete_option('hide_elements_settings');
+    }
+
+    public function hookUpgrade($args)
+    {
+        if (version_compare($args['old_version'], '1.1', '<=')) {
+            $settings = json_decode(get_option('hide_elements_settings'), true);
+            $settings['override'] = array();
+            $settings['search'] = array();
+            set_option('hide_elements_settings', json_encode($settings));
+        }
     }
 
     public function hookInitialize()
@@ -57,15 +71,21 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $post = $args['post'];
         $settings = array(
+            'override' => isset($post['override']) ? $post['override'] : array(),
             'form' => isset($post['form']) ? $post['form'] : array(),
             'admin' => isset($post['admin']) ? $post['admin'] : array(),
-            'public' => isset($post['public']) ? $post['public'] : array()
+            'public' => isset($post['public']) ? $post['public'] : array(),
+            'search' => isset($post['search']) ? $post['search'] : array(),
         );
         set_option('hide_elements_settings', json_encode($settings));
     }
 
     public function filterDisplayElements($elementsBySet)
     {
+        if ($this->_overrideFilter()) {
+            return $elementsBySet;
+        }
+
         $key = is_admin_theme() ? 'admin' : 'public';
         $itemTypeSetName = ElementSet::ITEM_TYPE_NAME;
 
@@ -92,6 +112,10 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
 
     public function filterElementSetForm($elements, $args)
     {
+        if ($this->_overrideFilter()) {
+            return $elements;
+        }
+
         $set = $args['element_set_name'];
         if (isset($this->_settings['form'][$set])) {
             $hideElements = array_keys($this->_settings['form'][$set]);
@@ -102,5 +126,33 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
             }
         }
         return $elements;
+    }
+
+    public function filterElementsSelectOptions($options)
+    {
+        if ($this->_overrideFilter()) {
+            return $options;
+        }
+
+        foreach ($options as $elementSet => $elements) {
+            foreach ($elements as $key => $element) {
+                if (isset($this->_settings['search'][$elementSet][$element])) {
+                    unset($options[$elementSet][$key]);
+                }
+            }
+        }
+        return $options;
+    }
+
+    /**
+     * Override filters for configured user roles.
+     */
+    protected function _overrideFilter()
+    {
+        $user = current_user();
+        if ($user && in_array($user->role, $this->_settings['override'])) {
+            return true;
+        }
+        return false;
     }
 }
