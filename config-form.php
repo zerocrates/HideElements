@@ -30,7 +30,7 @@
 <table id="hide-elements-table">
     <thead>
         <tr>
-            <th rowspan="2"><?php echo __('Element'); ?></th>
+            <th class="hide-boxes" rowspan="2"><?php echo __('Element'); ?></th>
             <th class="hide-boxes" colspan="4"><?php echo __('Hide on:'); ?></th>
         </tr>
         <tr>
@@ -39,7 +39,7 @@
             <th class="hide-boxes"><?php echo __('Public'); ?></th>
             <th class="hide-boxes"><?php echo __('Search'); ?></th>
         </tr>
-    <thead>
+    </thead>
     <tbody>
     <?php
     $current_element_set = null;
