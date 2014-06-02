@@ -130,15 +130,13 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
 
     public function filterElementsSelectOptions($options)
     {
-        if ($this->_overrideFilter()) {
+        if ($this->_overrideFilter() || !isset($this->_settings['search'])) {
             return $options;
         }
 
-        foreach ($options as $elementSet => $elements) {
-            foreach ($elements as $key => $element) {
-                if (isset($this->_settings['search'][$elementSet][$element])) {
-                    unset($options[$elementSet][$key]);
-                }
+        foreach ($this->_settings['search'] as $elementSet => $elements) {
+            foreach ($elements as $id => $hidden) {
+                unset($options[__($elementSet)][$id]);
             }
         }
         return $options;

@@ -84,10 +84,10 @@
             </td>
             <td class="hide-boxes">
                 <?php echo $view->formCheckbox(
-                    "search[{$element->set_name}][{$element->name}]",
+                    "search[{$element->set_name}][{$element->id}]",
                     '1', array(
                         'disableHidden' => true,
-                        'checked' => isset($settings['search'][$element->set_name][$element->name])
+                        'checked' => isset($settings['search'][$element->set_name][$element->id])
                     )
                 ); ?>
             </td>
