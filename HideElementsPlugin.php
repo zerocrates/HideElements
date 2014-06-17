@@ -134,9 +134,15 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
             return $options;
         }
 
+        $elementSetHeadings = get_option('show_element_set_headings');
+        $optgroups = $elementSetHeadings || version_compare(OMEKA_VERSION, '2.2', '<');
         foreach ($this->_settings['search'] as $elementSet => $elements) {
             foreach ($elements as $id => $hidden) {
-                unset($options[__($elementSet)][$id]);
+                if ($optgroups) {
+                    unset($options[__($elementSet)][$id]);
+                } else {
+                    unset($options[$id]);
+                }
             }
         }
         return $options;
