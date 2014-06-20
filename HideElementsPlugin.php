@@ -12,8 +12,6 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
 
     protected $_filters = array('display_elements', 'elements_select_options');
 
-    protected $_settings;
-
     public function hookInstall()
     {
         $defaults = array(
@@ -33,12 +31,26 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
 
     public function hookUpgrade($args)
     {
-        if (version_compare($args['old_version'], '1.1', '<=')) {
-            $settings = json_decode(get_option('hide_elements_settings'), true);
+        $oldVersion = $args['old_version'];
+        $settings = json_decode(get_option('hide_elements_settings'), true);
+        if (version_compare($oldVersion, '1.2', '<')) {
             $settings['override'] = array();
             $settings['search'] = array();
-            set_option('hide_elements_settings', json_encode($settings));
         }
+
+        // Convert old-style search hide settings to ID-based storage
+        if (version_compare($oldVersion, '1.3', '<')) {
+            $newSearch = array();
+            $elementTable = $this->_db->getTable('Element');
+            foreach ($settings['search'] as $set => $elements) {
+                foreach ($elements as $element => $enabled) {
+                    $element = $elementTable->findByElementSetNameAndElementName($set, $element);
+                    $newSearch[$set][$element->id] = $enabled;
+                }
+            }
+            $settings['search'] = $newSearch;
+        }
+        set_option('hide_elements_settings', json_encode($settings));
     }
 
     public function hookInitialize()
