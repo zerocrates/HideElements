@@ -7,6 +7,12 @@ admin side, display on the public side, and the search form.
 
 ### Version History
 
+*1.3*
+
+* Added initial support for Omeka 2.2.
+* Fixed hiding on search for localized sites.
+* Minor interface improvements (thanks @miniol)
+
 *1.2*
 
 * Added support for hiding elements from items advanced search.
