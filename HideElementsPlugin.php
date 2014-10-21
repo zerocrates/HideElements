@@ -11,7 +11,7 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
         'install', 'uninstall', 'upgrade');
 
     protected $_filters = array(
-        'index_elements',
+        'search_element_texts',
         'display_elements',
         'elements_select_options',
     );
@@ -103,7 +103,7 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
      *
      * @param array $elementTexts
      */
-    public function filterIndexElements($elementTexts)
+    public function filterSearchElementTexts($elementTexts)
     {
         // Full text indexation can't be overridden because the same field is
         // used for all users.
