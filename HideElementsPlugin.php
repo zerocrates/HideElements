@@ -72,7 +72,7 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
         $settings = $this->_settings;
 
         $table = get_db()->getTable('Element');
-        $select = $table->getSelect()
+        $select = $table->getSelectForFindBy()
             ->order('elements.element_set_id')
             ->order('ISNULL(elements.order)')
             ->order('elements.order');
