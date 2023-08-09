@@ -67,8 +67,13 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
         }
     }
 
-    public function hookConfigForm()
+    /**
+     * Shows plugin configuration page.
+     */
+    public function hookConfigForm($args)
     {
+        $view = $args['view'];
+
         $settings = $this->_settings;
 
         $table = get_db()->getTable('Element');
@@ -78,7 +83,13 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
             ->order('elements.order');
 
         $elements = $table->fetchObjects($select);
-        include 'config-form.php';
+        echo $view->partial(
+            'plugins/hide-elements-config-form.php',
+            array(
+                'view' => $view,
+                'settings' => $settings,
+                'elements' => $elements,
+        ));
     }
 
     public function hookConfig($args)
