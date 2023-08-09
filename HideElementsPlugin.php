@@ -7,8 +7,15 @@
 
 class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
 {
-    protected $_hooks = array('initialize', 'config', 'config_form',
-        'install', 'uninstall', 'upgrade');
+    protected $_hooks = array(
+        'install',
+        'uninstall',
+        'upgrade',
+        'initialize',
+        'config',
+        'config_form',
+        'items_browse_sql',
+    );
 
     protected $_filters = array('display_elements', 'elements_select_options');
 
@@ -92,6 +99,65 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
             'search' => isset($post['search']) ? $post['search'] : array(),
         );
         set_option('hide_elements_settings', json_encode($settings));
+    }
+
+    /**
+     * Hook used to alter the query for items.
+     *
+     * @param array $args
+     */
+    public function hookItemsBrowseSql($args)
+    {
+        if ($this->_overrideFilter() || !isset($this->_settings['search']) || empty($this->_settings['search'])) {
+            return;
+        }
+
+        $db = $this->_db;
+        $select = $args['select'];
+        $params = $args['params'];
+
+        // Flat the list of elements to hide in order to simplify the process.
+        $elementIdsToHide = array();
+        foreach ($this->_settings['search'] as $elementSet => $elements) {
+            $elementIdsToHide = array_merge($elementIdsToHide, array_keys($elements));
+        }
+
+        // If there is a field where there is a "hide search", the search is
+        // forbidden in this field, so the query shouldn't search in this field.
+        // So, remove them from query.
+        if (isset($params['search']) && !empty($params['search'])) {
+            // The join clause set in Table_Item::_simpleSearch() should be
+            // replaced, but Zend doesn't allow it, so another clause is added.
+            $select->joinLeft(
+                array('_hide_etx' => $db->ElementText),
+                "_hide_etx.record_id = items.id AND _hide_etx.record_type = 'Item'" .
+                ' AND _hide_etx.element_id NOT IN (' . implode(',', $elementIdsToHide) . ')',
+                array()
+            );
+            $terms = $params['search'];
+            $tagList = preg_split('/\s+/', $terms);
+            if (count($tagList) > 1) {
+                $tagList[] = $terms;
+            }
+            $whereCondition = $db->quoteInto('_hide_etx.text LIKE ?', '%' . $terms . '%')
+                . ' OR '
+                . $db->quoteInto('_simple_tags.name IN (?)', $tagList);
+            $select->where($whereCondition);
+        }
+
+        // If there is a field where there is a "hide search", the search is
+        // forbidden in this field, so the query shouldn't return any result.
+        // So, check all advanced queries with such a field.
+        if (isset($params['advanced'])) {
+            foreach ($params['advanced'] as $key => $advanced) {
+                if (in_array($advanced['element_id'], $elementIdsToHide)) {
+                    // reset() is not possible in a hook, so an impossible condition
+                    // is added.
+                    $select->where('1 = 0');
+                    return;
+                }
+            }
+        }
     }
 
     public function filterDisplayElements($elementsBySet)
