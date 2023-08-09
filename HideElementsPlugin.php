@@ -12,6 +12,8 @@ class HideElementsPlugin extends Omeka_Plugin_AbstractPlugin
 
     protected $_filters = array('display_elements', 'elements_select_options');
 
+    protected $_settings;
+
     public function hookInstall()
     {
         $defaults = array(
